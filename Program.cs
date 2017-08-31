@@ -1,4 +1,6 @@
-﻿namespace AndroidPushService
+﻿using System;
+
+namespace AndroidPushService
 {
     class Program
     {
@@ -22,7 +24,21 @@
         {
             var notificationService = new NotificationService(new NotificationServiceConfig(ServerKey, SenderId));
 
-            notificationService.SendPushNotification("Hello world!", "What are you up to?", TestDeviceToken);
+            try
+            {
+                notificationService.SendPushNotification("Hello world!", "What are you up to?", TestDeviceToken);
+                Console.WriteLine("Successfully send");
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+                Console.WriteLine($"Stacktrace: {ex.StackTrace}");
+            }
+            finally
+            {
+                Console.ReadKey();
+            }
         }
     }
 }

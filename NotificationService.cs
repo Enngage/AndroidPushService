@@ -20,67 +20,49 @@ namespace AndroidPushService
 
         public void SendPushNotification(string title, string body, string deviceToken, NotificationConfig notificationConfig = null)
         {
-            try
+
+            if (notificationConfig == null)
             {
-                if (notificationConfig == null)
+                notificationConfig = new NotificationConfig();
+            }
+
+            var serializer = new JavaScriptSerializer();
+
+            WebRequest request = WebRequest.Create(FirebaseSendEndpoint);
+            request.Method = "post";
+            request.ContentType = "application/json";
+            var data = new
+            {
+                to = deviceToken,
+                notification = new
                 {
-                    notificationConfig = new NotificationConfig();
+                    body,
+                    title,
+                    sound = !string.IsNullOrEmpty(notificationConfig.Sound) ? "Default" : notificationConfig.Sound
+
                 }
+            };
 
-                var serializer = new JavaScriptSerializer();
+            var json = serializer.Serialize(data);
+            Byte[] byteArray = Encoding.UTF8.GetBytes(json);
 
-                WebRequest request = WebRequest.Create(FirebaseSendEndpoint);
-                request.Method = "post";
-                request.ContentType = "application/json";
-                var data = new
+            request.Headers.Add($"Authorization: key={Config.ServerKey}");
+            request.Headers.Add($"Sender: id={Config.SenderId}");
+            request.ContentLength = byteArray.Length;
+
+            using (Stream dataStream = request.GetRequestStream())
+            {
+                dataStream.Write(byteArray, 0, byteArray.Length);
+                using (WebResponse tResponse = request.GetResponse())
                 {
-                    to = deviceToken,
-                    notification = new
+                    using (Stream dataStreamResponse = tResponse.GetResponseStream())
                     {
-                        body,
-                        title,
-                        sound = !string.IsNullOrEmpty(notificationConfig.Sound) ? "Default" : notificationConfig.Sound
-
-                    }
-                };
-
-                var json = serializer.Serialize(data);
-                Byte[] byteArray = Encoding.UTF8.GetBytes(json);
-
-                request.Headers.Add($"Authorization: key={Config.ServerKey}");
-                request.Headers.Add($"Sender: id={Config.SenderId}");
-                request.ContentLength = byteArray.Length;
-
-                using (Stream dataStream = request.GetRequestStream())
-                {
-                    dataStream.Write(byteArray, 0, byteArray.Length);
-                    using (WebResponse tResponse = request.GetResponse())
-                    {
-                        using (Stream dataStreamResponse = tResponse.GetResponseStream())
+                        if (dataStreamResponse == null)
                         {
-                            if (dataStreamResponse == null)
-                            {
-                                throw new NullReferenceException(nameof(dataStreamResponse));
-                            }
-
-                                using (StreamReader tReader = new StreamReader(dataStreamResponse))
-                                {
-                                    String response = tReader.ReadToEnd();
-
-                                    Console.WriteLine($"Successfully send with response: '{response}'");
-                                }
+                            throw new NullReferenceException(nameof(dataStreamResponse));
                         }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error: {ex.Message}");
-                Console.WriteLine($"Stacktrace: {ex.StackTrace}");
-            }
-            finally
-            {
-                Console.ReadKey();
             }
         }
     }
