@@ -1,0 +1,5 @@
+C:\dev\AndroidPushService\bin\Debug\AndroidPushService.exe.config
+C:\dev\AndroidPushService\bin\Debug\AndroidPushService.exe
+C:\dev\AndroidPushService\bin\Debug\AndroidPushService.pdb
+C:\dev\AndroidPushService\obj\Debug\AndroidPushService.exe
+C:\dev\AndroidPushService\obj\Debug\AndroidPushService.pdb
